@@ -97,9 +97,10 @@ jobs:
       # ConfigMap Setup
       - name: Create ConfigMap
         run: |
-          kubectl create configmap better-backend-app-config \
-            --from-file=path/to/your/config/file.env \
-            --dry-run=client -o yaml | kubectl apply -f -
+          # kubectl create configmap better-backend-app-config \
+          #   --from-file=path/to/your/config/file.env \
+          #   --dry-run=client -o yaml | kubectl apply -f -
+          kubectl apply -f manifest/templates/configmap.yaml
 
       # Deploy Django Application with Helm
       - name: Deploy Django Application
