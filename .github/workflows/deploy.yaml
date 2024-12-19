@@ -109,11 +109,13 @@ jobs:
             --set django.host=api-v2.integration-betteropinions.com \
             --set configMap.name=better-backend-app-config \
             --set global.environment=${{ env.ENVIRONMENT }} \
-            --atomic
+            --atomic \
+            --timeout 10m
 
       # Verify Deployment
       - name: Check deployment status
         run: |
+          kubectl get all --all-namespaces
           kubectl rollout status deployment/${{ env.DEPLOYMENT_NAME }} || exit 1
 
       # Update DNS
