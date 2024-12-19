@@ -152,7 +152,7 @@ jobs:
         helm list --short | tail -n +6 | xargs -I {} helm delete {} --no-hooks
 
     - name: Archive Helm artifacts
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: helm-chart
         path: ./django-app
