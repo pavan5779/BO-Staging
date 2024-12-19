@@ -1,6 +1,6 @@
-apiVersion: v2
-name: django-chart
-description: A Helm chart for Kubernetes
-type: application
-version: 0.1.0
-appVersion: "1.0"
+apiVersion: v2                
+name: django-chart            
+description: A Helm chart for Kubernetes  # A brief description of what your chart does.
+type: application             # Defines the type of chart (typically 'application' for app charts).
+version: 0.1.0                # The version of this Helm chart. This should follow Semantic Versioning (semver).
+appVersion: "1.0"             # The version of the application this chart deploys. Often the version of the software being packaged.
