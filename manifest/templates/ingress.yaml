@@ -1,0 +1,26 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Values.django.appName }}
+  annotations:
+    kubernetes.io/ingress.class: "gce"  # Use "gce" for GKE Ingress
+    kubernetes.io/ingress.global-static-ip-name: "gke-ingress-static-ip"  # Optional: For a static IP, create one in GCP and replace here
+    ingress.gcp.kubernetes.io/pre-shared-cert: "gke-openssl-cert"  # Replace with your pre-shared certificate name
+    ingress.gcp.kubernetes.io/ssl-redirect: "true"
+    
+spec:
+  tls:
+  - hosts:
+      - {{ .Values.django.host }}  # Add your host here, e.g., "example.com"
+    secretName: gke-openssl-cert  # This should match the name of the Secret containing the self-signed cert
+  rules:
+  - host: {{ .Values.django.host }}
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ .Values.django.appName }}
+            port:
+              number: 80

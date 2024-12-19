@@ -1,0 +1,20 @@
+global:
+  environment: staging
+
+configMap:
+  name: better-backend-app-config
+
+django:
+  appName: better-backend-app-django
+  host: api-v2.integration-betteropinions.com
+  image:
+    repository: asia-south1-docker.pkg.dev/betteropinions-test/bo-main/2024-11-01.1
+    tag: latest
+  replicas: 1
+  resources:
+    limits:
+      cpu: 3
+      memory: 6Gi 
+    requests:
+      cpu: 2
+      memory: 4Gi
