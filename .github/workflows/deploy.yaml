@@ -111,7 +111,8 @@ jobs:
             --set global.environment=${{ env.ENVIRONMENT }} \
             --timeout 15m \
             --atomic \
-            --debug
+            --debug \
+            --force \
             --wait          
             
       # Verify Deployment
