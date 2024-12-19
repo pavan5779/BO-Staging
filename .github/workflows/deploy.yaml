@@ -98,7 +98,8 @@ jobs:
 
       # Validate Helm chart
       - name: Validate Helm chart
-        run: helm lint ./django-app
+        run: |
+          kubectl apply -f Chart.yaml
 
       # ConfigMap Setup
       - name: Create ConfigMap
