@@ -99,7 +99,7 @@ jobs:
       # Validate Helm chart
       - name: Validate Helm chart
         run: |
-          kubectl apply -f Chart.yaml
+          kubectl apply -f manifest/Chart.yaml
 
       # ConfigMap Setup
       - name: Create ConfigMap
