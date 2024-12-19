@@ -3,16 +3,12 @@ kind: Ingress
 metadata:
   name: better-backend-app-django
   annotations:
-    kubernetes.io/ingress.class: "gce"  # Use "gce" for GKE Ingress
     # kubernetes.io/ingress.global-static-ip-name: "gke-ingress-static-ip"  # Optional: For a static IP, create one in GCP and replace here
-    ingress.gcp.kubernetes.io/pre-shared-cert: "gke-openssl-cert"  # Replace with your pre-shared certificate name
-    ingress.gcp.kubernetes.io/ssl-redirect: "true"
+    networking.gke.io/managed-certificates: "gke-openssl-cert"  # Use this for GKE-managed certificates
+    kubernetes.io/ingress.allow-http: "false"  # Force HTTPS
     
 spec:
-  tls:
-  - hosts:
-      - api-v2.integration-betteropinions.com  # Add your host here, e.g., "example.com"
-    secretName: gke-openssl-cert  # This should match the name of the Secret containing the self-signed cert
+  ingressClassName: "gce"  # This replaces the deprecated kubernetes.io/ingress.class annotation
   rules:
   - host: api-v2.integration-betteropinions.com
     http:
