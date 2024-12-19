@@ -96,6 +96,15 @@ jobs:
             --key=ssl/tls.key \
             --dry-run=client -o yaml | kubectl apply -f -
 
+      # Check and clean up existing release
+      - name: Check and clean up existing release
+        run: |
+          if helm status ${{ env.DEPLOYMENT_NAME }} 2>/dev/null | grep -q 'STATUS: pending-install\|STATUS: pending-upgrade'; then
+            echo "Release is in a pending state. Attempting to delete..."
+            helm delete ${{ env.DEPLOYMENT_NAME }} --no-hooks || true
+            sleep 30  # Wait for resources to be cleaned up
+          fi
+
       # Validate Helm chart
       - name: Validate Helm chart
         run: helm lint ./manifest
@@ -103,23 +112,61 @@ jobs:
       # Deploy Django Application with Helm
       - name: Deploy Django Application
         run: |
-          helm upgrade --install ${{ env.DEPLOYMENT_NAME }} ./manifest \
-            --set django.image.repository=asia-south1-docker.pkg.dev/${{ env.PROJECT_ID }}/bo-main/backend \
-            --set django.image.tag=${{ github.sha }} \
-            --set django.host=api-v2.integration-betteropinions.com \
-            --set configMap.name=better-backend-app-config \
-            --set global.environment=${{ env.ENVIRONMENT }} \
-            --timeout 15m \
-            --atomic \
-            --debug \
-            --force \
-            --wait          
-            
+          for i in {1..3}; do
+            helm upgrade --install ${{ env.DEPLOYMENT_NAME }} ./manifest \
+              --set django.image.repository=asia-south1-docker.pkg.dev/${{ env.PROJECT_ID }}/bo-main/backend \
+              --set django.image.tag=${{ github.sha }} \
+              --set django.host=api-v2.integration-betteropinions.com \
+              --set configMap.name=better-backend-app-config \
+              --set global.environment=${{ env.ENVIRONMENT }} \
+              --timeout 15m \
+              --atomic \
+              --debug \
+              --wait \
+              --force && break || sleep 60
+          done
+
+      # Check release status
+      - name: Check release status
+        run: |
+          helm status ${{ env.DEPLOYMENT_NAME }}
+
       # Verify Deployment
       - name: Check deployment status
         run: |
           kubectl get all --all-namespaces
-          kubectl rollout status deployment/${{ env.DEPLOYMENT_NAME }} || exit 1
+          kubectl rollout status deployment/${{ env.DEPLOYMENT_NAME }} --timeout=5m || exit 1
+
+      # Debug - Check Kubernetes resources
+      - name: Debug - Check Kubernetes resources
+        if: failure()
+        run: |
+          echo "Pods:"
+          kubectl get pods
+          echo "\nServices:"
+          kubectl get services
+          echo "\nIngresses:"
+          kubectl get ingresses
+          echo "\nEvents:"
+          kubectl get events --sort-by=.metadata.creationTimestamp
+
+      # Describe pods
+      - name: Describe pods
+        if: failure()
+        run: |
+          kubectl describe pods
+
+      # Check Ingress status
+      - name: Check Ingress status
+        if: failure()
+        run: |
+          kubectl describe ingress
+
+      # Check Helm release history
+      - name: Check Helm release history
+        if: failure()
+        run: |
+          helm history ${{ env.DEPLOYMENT_NAME }}
 
       # Update DNS
       - name: Update DNS
