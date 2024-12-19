@@ -19,6 +19,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
       # Authenticate with Google Cloud
       - name: Authenticate to Google Cloud
@@ -94,12 +96,13 @@ jobs:
             --key=ssl/tls.key \
             --dry-run=client -o yaml | kubectl apply -f -
 
+      # Validate Helm chart
+      - name: Validate Helm chart
+        run: helm lint ./django-app
+
       # ConfigMap Setup
       - name: Create ConfigMap
         run: |
-          # kubectl create configmap better-backend-app-config \
-          #   --from-file=path/to/your/config/file.env \
-          #   --dry-run=client -o yaml | kubectl apply -f -
           kubectl apply -f manifest/templates/configmap.yaml
 
       # Deploy Django Application with Helm
