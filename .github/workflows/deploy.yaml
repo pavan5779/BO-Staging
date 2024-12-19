@@ -100,11 +100,6 @@ jobs:
       - name: Validate Helm chart
         run: helm lint ./manifest
 
-      # ConfigMap Setup
-      - name: Create ConfigMap
-        run: |
-          kubectl apply -f manifest/templates/configmap.yaml
-
       # Deploy Django Application with Helm
       - name: Deploy Django Application
         run: |
