@@ -113,14 +113,17 @@ jobs:
       - name: Deploy Django Application
         run: |
           for i in {1..3}; do
-            helm template $DEPLOYMENT_NAME ./manifest \
+            helm upgrade --install $DEPLOYMENT_NAME ./manifest \
               --set django.image.repository=asia-south1-docker.pkg.dev/$PROJECT_ID/bo-main/backend \
               --set django.image.tag=$GITHUB_SHA \
               --set django.host=api-v2.integration-betteropinions.com \
               --set configMap.name=better-backend-app-config \
-              --set global.environment=$ENVIRONMENT > rendered.yaml
+              --set global.environment=$ENVIRONMENT \
+              --atomic \
+              --wait \
+              --force && break || sleep 60
           done
-              
+
       # Check release status
       - name: Check release status
         run: |
@@ -129,33 +132,33 @@ jobs:
       # Verify Deployment
       - name: Check deployment status
         run: |
-          kubectl get all --all-namespaces
-          kubectl rollout status deployment/${{ env.DEPLOYMENT_NAME }} --timeout=5m || exit 1
+          kubectl get all --namespace=default
+          kubectl rollout status deployment/${{ env.DEPLOYMENT_NAME }} --timeout=10m || exit 1
 
       # Debug - Check Kubernetes resources
       - name: Debug - Check Kubernetes resources
         if: failure()
         run: |
           echo "Pods:"
-          kubectl get pods
+          kubectl get pods --namespace=default
           echo "\nServices:"
-          kubectl get services
+          kubectl get services --namespace=default
           echo "\nIngresses:"
-          kubectl get ingresses
+          kubectl get ingresses --namespace=default
           echo "\nEvents:"
-          kubectl get events --sort-by=.metadata.creationTimestamp
+          kubectl get events --namespace=default --sort-by=.metadata.creationTimestamp
 
       # Describe pods
       - name: Describe pods
         if: failure()
         run: |
-          kubectl describe pods
+          kubectl describe pods --namespace=default
 
       # Check Ingress status
       - name: Check Ingress status
         if: failure()
         run: |
-          kubectl describe ingress
+          kubectl describe ingress --namespace=default
 
       # Check Helm release history
       - name: Check Helm release history
@@ -166,6 +169,6 @@ jobs:
       # Update DNS
       - name: Update DNS
         run: |
-          INGRESS_IP=$(kubectl get ingress ${{ env.DEPLOYMENT_NAME }} -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+          INGRESS_IP=$(kubectl get ingress ${{ env.DEPLOYMENT_NAME }} -o jsonpath='{.status.loadBalancer.ingress[0].ip}' --namespace=default)
           echo "Updating DNS with IP: $INGRESS_IP"
           # Add your DNS update logic here
