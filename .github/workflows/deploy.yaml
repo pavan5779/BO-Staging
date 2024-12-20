@@ -119,9 +119,7 @@ jobs:
               --set django.host=api-v2.integration-betteropinions.com \
               --set configMap.name=better-backend-app-config \
               --set global.environment=${{ env.ENVIRONMENT }} \
-              --timeout 15m \
               --atomic \
-              --debug \
               --wait \
               --force && break || sleep 60
           done
