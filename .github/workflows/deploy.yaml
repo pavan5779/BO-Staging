@@ -113,17 +113,13 @@ jobs:
       - name: Deploy Django Application
         run: |
           for i in {1..3}; do
-            helm upgrade --install ${{ env.DEPLOYMENT_NAME }} ./manifest \
-              --set django.image.repository=asia-south1-docker.pkg.dev/${{ env.PROJECT_ID }}/bo-main/backend \
-              --set django.image.tag=${{ github.sha }} \
+            helm template $DEPLOYMENT_NAME ./manifest \
+              --set django.image.repository=asia-south1-docker.pkg.dev/$PROJECT_ID/bo-main/backend \
+              --set django.image.tag=$GITHUB_SHA \
               --set django.host=api-v2.integration-betteropinions.com \
               --set configMap.name=better-backend-app-config \
-              --set global.environment=${{ env.ENVIRONMENT }} \
-              --atomic \
-              --wait \
-              --force && break || sleep 60
-          done
-
+              --set global.environment=$ENVIRONMENT > rendered.yaml
+              
       # Check release status
       - name: Check release status
         run: |
