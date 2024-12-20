@@ -119,6 +119,7 @@ jobs:
               --set django.host=api-v2.integration-betteropinions.com \
               --set configMap.name=better-backend-app-config \
               --set global.environment=$ENVIRONMENT > rendered.yaml
+          done
               
       # Check release status
       - name: Check release status
